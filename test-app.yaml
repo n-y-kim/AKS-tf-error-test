@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspnetapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aspnetapp
+  template:
+    metadata:
+      labels:
+        app: aspnetapp
+    spec:
+      containers:
+      - image: "mcr.microsoft.com/dotnet/samples:aspnetapp"
+        name: aspnetapp-image
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspnetapp
+spec:
+  selector:
+    app: aspnetapp
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aspnetapp-private
+  annotations:
+    appgw.ingress.kubernetes.io/use-private-ip: "true"
+  #   kubernetes.io/ingress.class: azure/application-gateway
+  
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: aspnetapp
+            port:
+              number: 80
+        pathType: Exact
+
+# ---
+
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: aspnetapp-public
+#   annotations:
+#     appgw.ingress.kubernetes.io/use-private-ip: "false"
+#   #   kubernetes.io/ingress.class: azure/application-gateway
+  
+# spec:
+#   ingressClassName: azure-application-gateway
+#   rules:
+#   - http:
+#       paths:
+#       - path: /
+#         backend:
+#           service:
+#             name: aspnetapp
+#             port:
+#               number: 80
+#         pathType: Exact
