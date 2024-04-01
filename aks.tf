@@ -29,11 +29,7 @@ resource "azurerm_kubernetes_cluster" "k8s" {
   network_profile {
     load_balancer_sku = "standard"
     network_plugin = "azure"
-    outbound_type = "userDefinedRouting"
-    # load_balancer_profile {
-    #   managed_outbound_ip_count = 1
-    #   //outbound_ip_prefix_ids = [azurerm_subnet.ingress-appgateway-subnet[count.index].id]
-    # }
+    outbound_type = "loadBalancer"
   }
   tags = {
     Environment = "Development"
