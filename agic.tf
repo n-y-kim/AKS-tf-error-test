@@ -1,10 +1,11 @@
-# resource "azurerm_public_ip" "ag-pip" {
-#   name                = "ag-pip"
-#   resource_group_name = azurerm_resource_group.k8s-rg.name
-#   location            = azurerm_resource_group.k8s-rg.location
-#   allocation_method   = "Static"
-#   sku = "Standard"
-# }
+resource "azurerm_public_ip" "ag-pip" {
+  count              = var.resource_count
+  name                = "ag-pip-${count.index}"
+  resource_group_name = azurerm_resource_group.k8s-rg[count.index].name
+  location            = azurerm_resource_group.k8s-rg[count.index].location
+  allocation_method   = "Static"
+  sku = "Standard"
+}
 
 # since these variables are re-used - a locals block makes this more maintainable
 
@@ -52,17 +53,17 @@ resource "azurerm_application_gateway" "network" {
   #   identity_ids  = [azurerm_user_assigned_identity.agic_identity.id]
   # }
 
-  # frontend_ip_configuration {
-  #   name                 = local.frontend_public_ip_configuration_name
-  #   public_ip_address_id = azurerm_public_ip.ag-pip.id
-  # }
-
   frontend_ip_configuration {
-    name                 = local.frontend_private_ip_configuration_name
-    private_ip_address   = "172.0.34.9"
-    subnet_id            = azurerm_subnet.ingress-appgateway-subnet[count.index].id
-    private_ip_address_allocation = "Static"
+    name                 = local.frontend_public_ip_configuration_name
+    public_ip_address_id = azurerm_public_ip.ag-pip[count.index].id
   }
+
+  # frontend_ip_configuration {
+  #   name                 = local.frontend_private_ip_configuration_name
+  #   private_ip_address   = "172.0.34.9"
+  #   subnet_id            = azurerm_subnet.ingress-appgateway-subnet[count.index].id
+  #   private_ip_address_allocation = "Static"
+  # }
 
   backend_address_pool {
     name = local.backend_address_pool_names[count.index]
@@ -80,7 +81,7 @@ resource "azurerm_application_gateway" "network" {
 
   http_listener {
     name                           = local.listener_names[count.index]
-    frontend_ip_configuration_name = local.frontend_private_ip_configuration_name
+    frontend_ip_configuration_name = local.frontend_public_ip_configuration_name
     frontend_port_name             = local.frontend_port_names[count.index]
     protocol                       = "Http"
   }
