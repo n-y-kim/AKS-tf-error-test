@@ -6,7 +6,7 @@ data "azurerm_resource_group" "mc_rg" {
 
 data "azurerm_user_assigned_identity" "auto_created_agic_mi" {
   count = var.resource_count
-  name  = "ingressapplicationgateway-${azurerm_kubernetes_cluster.k8s[count.index].name}"
+  name  = "ingressapplicationgateway-${local.cluster_names[count.index]}"
   resource_group_name = data.azurerm_resource_group.mc_rg[count.index].name
 }
 
