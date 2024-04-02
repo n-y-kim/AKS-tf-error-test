@@ -30,6 +30,7 @@ resource "azurerm_kubernetes_cluster" "k8s" {
     load_balancer_sku = "standard"
     network_plugin = "azure"
     outbound_type = "loadBalancer"
+		# outbound_type = "userDefinedRouting"
   }
   tags = {
     Environment = "Development"
